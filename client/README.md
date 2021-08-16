@@ -1,0 +1,1 @@
+This is a dummy Flask client that makes requests to the micro service and it is deployed using Google App Engine (https://mathserv.uc.r.appspot.com/).

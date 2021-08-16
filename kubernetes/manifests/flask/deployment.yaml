@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask
+  labels:
+    app: flask
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask
+  template:
+    metadata:
+      labels:
+        app: flask
+    spec:
+      containers:
+      - name: flask
+        image: gcr.io/mathserv/math-serv
+        command: ["python3"]
+        args: ["backend/manage.py","run","0.0.0.0","5000"]
+        env:
+        - name: STORAGE_PATH_BASE
+          value: "/tmp"
+        - name: DEBUG
+          value: "True"
+        - name: SECRET_KEY
+          value: "blablabla"
+        - name: SQLALCHEMY_DATABASE_URI
+          value: "postgresql://math_serv:math_serv@postgresql/math_serv"
+        - name: SQLALCHEMY_TRACK_MODIFICATIONS
+          value: "False"
+        - name: CELERY_BROKER_URL
+          value: "amqp://math-serv:math-serv@rabbitmq:5672/math-serv"
+        - name: RESULT_BACKEND
+          value: "db+postgresql://math_serv:math_serv@db/math_serv"
+        ports:
+        - containerPort: 5000

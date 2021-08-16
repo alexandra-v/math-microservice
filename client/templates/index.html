@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Math Client</title>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    </head>	
+	<body>
+        <div class="container">
+            <h1 style="text-align: center;">Math Client</h1>
+        </div>
+        <div class="container operation-form">
+            <h3>Operation Form</h3>
+            <div class="mb-3">
+                <select id="op_type" class="form-select" aria-label="Default select example">
+                    <option selected>Select an operation</option>
+                    <option value="pow_op">Power</option>
+                    <option value="fib_op">Fibonacci</option>
+                    <option value="fact_op">Factorial</option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="operands" class="form-label">Operands (there must be a space between each operand)</label>
+                <textarea class="form-control" id="operands" rows="2"></textarea>
+            </div>
+            <button class="btn btn-primary sendOperation">Submit</button>
+        </div>
+
+        <hr>
+
+        <div class="container">
+            <h3>Operation History</h3>
+            <div class="container" id="historyDiv">
+                <ul>
+                    {% for update in all_updates %}
+                        <li>{{ update }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+    </body>
+
+    <script>
+
+        $(document).ready(function(){
+
+            function getCookie(c_name) {
+                if (document.cookie.length > 0) {
+                    c_start = document.cookie.indexOf(c_name + "=");
+                    if (c_start != -1) {
+                        c_start = c_start + c_name.length + 1;
+                        c_end = document.cookie.indexOf(";", c_start);
+                        if (c_end == -1) c_end = document.cookie.length;
+                        return unescape(document.cookie.substring(c_start,c_end));
+                    }
+                }
+                return "";
+            }
+
+            $(document).on("click", ".sendOperation", function(){
+                op_type = $("#op_type").val();
+                operands = $("#operands").val();
+
+                operands = operands.split(" ").map(x => parseInt(x));
+                console.log(operands);
+
+                $.ajax({
+                    url: '/ajax/operation/',
+                    type: 'POST',
+                    headers: { "X-CSRFToken": getCookie("csrftoken")},
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        'op_type': op_type,
+                        'operands': operands
+                    }),
+                    success: function(data) {
+                        console.log('SUCCESS:' + data.status);
+                        if (data.error) {
+                            console.log(data.error);
+                        }
+                    },
+                    error: function(data) {
+                        console.log('ERROR at operation');
+                    }
+                });
+            });
+
+            setInterval(function(){
+                $.ajax({
+                    url: '/ajax/updates/',
+                    type: 'GET',
+                    success: function(data) {
+                        console.log('Updates succes!');
+                        if (data.error) {
+                            console.log(data.error);
+                        }
+                        $("#historyDiv").html('');
+                        for (let i = 0; i < data.length; i = i + 1) {
+                            $("#historyDiv").append('<li>' + data[i] + '</li>');
+                        }
+                    },
+                    error: function(data) {
+                        console.log('Error at updates');
+                    }
+                });
+            }, 2000);
+
+        })
+    </script>
+</html>

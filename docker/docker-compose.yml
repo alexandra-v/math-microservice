@@ -1,0 +1,51 @@
+version: "3"
+services:
+  flask:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: python3 backend/manage.py run 0.0.0.0 5000
+    environment:
+      STORAGE_PATH_BASE: /tmp
+    volumes:
+      - ..:/code
+    ports:
+      - 5000:5000
+    restart: always
+    depends_on:
+      - postgresql
+      - rabbitmq
+  celery:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: celery -A backend.celery_worker.celery worker --loglevel=info
+    environment:
+      STORAGE_PATH_BASE: /tmp
+    volumes:
+      - ..:/code
+    restart: always
+    depends_on:
+      - postgresql
+      - rabbitmq
+  postgresql:
+    image: postgres
+    environment:
+      POSTGRES_USER: math_serv
+      POSTGRES_PASSWORD: math_serv
+      POSTRES_DB: math_serv
+    ports:
+    - 55434:5432
+  rabbitmq:
+    image: rabbitmq:3.7-management
+    volumes:
+      - ./rabbit_config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./rabbit_config/definitions.json:/etc/rabbitmq/definitions.json
+    ports:
+      - 35672:15672
+      - 55672:5672
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      timeout: 5s
+      interval: 5s
+      retries: 5

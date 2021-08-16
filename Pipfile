@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "==1.1.2"
+python-dotenv = "*"
+flask-migrate = "==2.1.1"
+flask-script = "==2.0.6"
+flask-restx = "*"
+celery = "*"
+psycopg2 = "==2.7.5"
+flasgger = "*"
+requests = "*"
+flask-admin = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.6"

@@ -1,0 +1,12 @@
+### Flask ###
+*.pyc
+__pycache__/
+backend/instance/
+
+# Visual Studio Code
+.vscode/
+
+#Idea
+.idea/
+
+*.db
